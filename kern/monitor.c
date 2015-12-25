@@ -24,6 +24,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+	{ "backtrace", "Display information about the $esp & $ebp", mon_backtrace},
 };
 #define NCOMMANDS (sizeof(commands)/sizeof(commands[0]))
 
@@ -55,11 +56,70 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
+/******** mon_backtrace Implementation *******/
+static __inline void read_six_words(volatile uint32_t *p) {
+	volatile uint32_t memoryTemp[6] = {0};
+	
+	int i = 0;
+	memoryTemp[0] = (volatile uint32_t)p;
+	p++;
+	for (i = 1; i < 6; i++, p++) {
+		memoryTemp[i] = *p;
+	}
+	
+	cprintf("  ebp %08x  eip %08x  args %08x %08x %08x %08x\n", 
+		memoryTemp[0], memoryTemp[1], memoryTemp[2], memoryTemp[3],
+		memoryTemp[4], memoryTemp[5]
+	);
+}
+
+static __inline void print_function_info(volatile uint32_t* addr) {
+	struct Eipdebuginfo eipInfo, *info = &eipInfo;
+
+	debuginfo_eip((uintptr_t)addr, info);
+	cprintf("\t%s:%s: ", info->eip_file, info->eip_line);
+	cprintf("%.*s+%d\n", info->eip_fn_namelen, info->eip_fn_name, info->eip_fn_narg);
+}
+
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
+
+	volatile uint32_t *p = (uint32_t*)read_ebp();
+
+	cprintf("Stack backtrace:\n");
+	while (p != 0x0) {
+		read_six_words(p);
+		// cprintf("\t%s", eip_file,)
+		print_function_info((volatile uint32_t*)*(p + 1));
+		p = (uint32_t*)*p;
+	}
 	return 0;
+
+	/*
+	uint32_t ebp,eip;
+	struct Eipdebuginfo info;
+	int i=0;
+	ebp=read_ebp();
+	while(ebp!=0) {
+		eip=*((uint32_t *)(ebp+4));
+		
+		// change ip to addr
+		// debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
+		debuginfo_eip((uintptr_t)eip,&info);
+		cprintf("ebp %0x eip %0x ",ebp,eip);
+		cprintf("args ");
+		for(i=0;i<=4;i++)
+			cprintf("%08x ",*(uint32_t *)(ebp+8+4*i));
+		cprintf("\n");
+		cprintf("\t%s\t%s ",info.eip_file,info.eip_fn_name);
+		cprintf("\n");
+		
+		ebp=*((uint32_t *)ebp);
+	}
+	return 0;
+	*/
 }
 
 

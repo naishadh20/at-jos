@@ -192,6 +192,7 @@ cga_putc(int c)
 	}
 
 	// What is the purpose of this?
+	// Ans: it is used to move up the screen one column.
 	if (crt_pos >= CRT_SIZE) {
 		int i;
 
