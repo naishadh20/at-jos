@@ -77,8 +77,9 @@ static __inline void print_function_info(volatile uint32_t* addr) {
 	struct Eipdebuginfo eipInfo, *info = &eipInfo;
 
 	debuginfo_eip((uintptr_t)addr, info);
-	cprintf("\t%s:%s: ", info->eip_file, info->eip_line);
-	cprintf("%.*s+%d\n", info->eip_fn_namelen, info->eip_fn_name, info->eip_fn_narg);
+	cprintf("        %s:%d: ", info->eip_file, info->eip_line);
+	cprintf("%.*s+%d\n", info->eip_fn_namelen, info->eip_fn_name, 
+		(uintptr_t)addr - info->eip_fn_addr);
 }
 
 int
@@ -96,30 +97,6 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 		p = (uint32_t*)*p;
 	}
 	return 0;
-
-	/*
-	uint32_t ebp,eip;
-	struct Eipdebuginfo info;
-	int i=0;
-	ebp=read_ebp();
-	while(ebp!=0) {
-		eip=*((uint32_t *)(ebp+4));
-		
-		// change ip to addr
-		// debuginfo_eip(uintptr_t addr, struct Eipdebuginfo *info)
-		debuginfo_eip((uintptr_t)eip,&info);
-		cprintf("ebp %0x eip %0x ",ebp,eip);
-		cprintf("args ");
-		for(i=0;i<=4;i++)
-			cprintf("%08x ",*(uint32_t *)(ebp+8+4*i));
-		cprintf("\n");
-		cprintf("\t%s\t%s ",info.eip_file,info.eip_fn_name);
-		cprintf("\n");
-		
-		ebp=*((uint32_t *)ebp);
-	}
-	return 0;
-	*/
 }
 
 
