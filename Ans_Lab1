@@ -1,4 +1,12 @@
+ljmp    $PROT_MODE_CSEG, $protcseg ----> Starts executing 32bit code.
+
+ 7d6b:	ff 15 18 00 01 00    	call   *0x10018----> Last instruction of bootloader.
+ 
+
 7c45:	e8 cb 00 00 00       	call   7d15 <bootmain> ----> Calling of bootmain
+
+0x10000c:	movw   $0x1234,0x472 ----> First instruction of kernel & Where is it?
+
 
 
  7d15:	55                   	push   %ebp
