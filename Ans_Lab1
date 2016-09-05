@@ -1,0 +1,267 @@
+7c45:	e8 cb 00 00 00       	call   7d15 <bootmain> ----> Calling of bootmain
+
+
+ 7d15:	55                   	push   %ebp
+    7d16:	89 e5                	mov    %esp,%ebp
+    7d18:	56                   	push   %esi
+    7d19:	53                   	push   %ebx
+
+----------> First 4 statements executed in bootmain (setting the stack pointer and base pointer)<---------------------------
+
+
+
+7d26:	e8 b1 ff ff ff       	call   7cdc <readseg>  ----> calling of readseg in bootmain.
+
+
+7cdc:	55                   	push   %ebp
+    7cdd:	89 e5                	mov    %esp,%ebp
+    7cdf:	57                   	push   %edi
+    7ce0:	56                   	push   %esi
+
+----------> First 4 statements executed in readseg (setting the stack pointer and base pointer)<---------------------------
+
+
+ 7d04:	e8 73 ff ff ff       	call   7c7c <readsect>  ------> Calling of readsect function// actually reading the sector.
+
+
+------------> Exact line by line assembly of readsect<---------------------------------------------------------------------
+
+7c7c:	55                   	push   %ebp
+    7c7d:	89 e5                	mov    %esp,%ebp
+    7c7f:	57                   	push   %edi
+    7c80:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+	// wait for disk to be ready
+	waitdisk();
+    7c83:	e8 e2 ff ff ff       	call   7c6a <waitdisk>
+}
+
+static __inline void
+outb(int port, uint8_t data)
+{
+	__asm __volatile("outb %0,%w1" : : "a" (data), "d" (port));
+    7c88:	ba f2 01 00 00       	mov    $0x1f2,%edx
+    7c8d:	b0 01                	mov    $0x1,%al
+    7c8f:	ee                   	out    %al,(%dx)
+    7c90:	ba f3 01 00 00       	mov    $0x1f3,%edx
+    7c95:	88 c8                	mov    %cl,%al
+    7c97:	ee                   	out    %al,(%dx)
+    7c98:	89 c8                	mov    %ecx,%eax
+    7c9a:	ba f4 01 00 00       	mov    $0x1f4,%edx
+    7c9f:	c1 e8 08             	shr    $0x8,%eax
+    7ca2:	ee                   	out    %al,(%dx)
+    7ca3:	89 c8                	mov    %ecx,%eax
+    7ca5:	ba f5 01 00 00       	mov    $0x1f5,%edx
+    7caa:	c1 e8 10             	shr    $0x10,%eax
+    7cad:	ee                   	out    %al,(%dx)
+    7cae:	89 c8                	mov    %ecx,%eax
+    7cb0:	ba f6 01 00 00       	mov    $0x1f6,%edx
+    7cb5:	c1 e8 18             	shr    $0x18,%eax
+    7cb8:	83 c8 e0             	or     $0xffffffe0,%eax
+    7cbb:	ee                   	out    %al,(%dx)
+    7cbc:	ba f7 01 00 00       	mov    $0x1f7,%edx
+    7cc1:	b0 20                	mov    $0x20,%al
+    7cc3:	ee                   	out    %al,(%dx)
+	outb(0x1F5, offset >> 16);
+	outb(0x1F6, (offset >> 24) | 0xE0);
+	outb(0x1F7, 0x20);	// cmd 0x20 - read sectors
+
+	// wait for disk to be ready
+	waitdisk();
+    7cc4:	e8 a1 ff ff ff       	call   7c6a <waitdisk>
+}
+
+static __inline void
+insl(int port, void *addr, int cnt)
+{
+	__asm __volatile("cld\n\trepne\n\tinsl"			:
+    7cc9:	8b 7d 08             	mov    0x8(%ebp),%edi
+    7ccc:	b9 80 00 00 00       	mov    $0x80,%ecx
+    7cd1:	ba f0 01 00 00       	mov    $0x1f0,%edx
+    7cd6:	fc                   	cld    
+    7cd7:	f2 6d                	repnz insl (%dx),%es:(%edi)
+
+	// read a sector
+	insl(0x1F0, dst, SECTSIZE/4);
+}
+    7cd9:	5f                   	pop    %edi
+    7cda:	5d                   	pop    %ebp
+    7cdb:	c3                   	ret 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+For Loop(start)
+7d51:	39 f3                	cmp    %esi,%ebx
+For loop(end)
+
+7d69:	eb e6                	jmp    7d51 <bootmain+0x3c>
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+objdump -h obj/kern/kernel
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00001861  f0100000  00100000  00001000  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       00000730  f0101880  00101880  00002880  2**5
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .stab         000038b9  f0101fb0  00101fb0  00002fb0  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  3 .stabstr      000018c6  f0105869  00105869  00006869  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  4 .data         0000a300  f0108000  00108000  00009000  2**12
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .bss          00000644  f0112300  00112300  00013300  2**5
+                  ALLOC
+  6 .comment      00000034  00000000  00000000  00013300  2**0
+                  CONTENTS, READONLY
+
+
+objdump -h obj/boot/boot.out
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000186  00007c00  00007c00  00000074  2**2
+                  CONTENTS, ALLOC, LOAD, CODE
+  1 .eh_frame     000000a8  00007d88  00007d88  000001fc  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .stab         00000720  00000000  00000000  000002a4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  3 .stabstr      0000088f  00000000  00000000  000009c4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .comment      00000034  00000000  00000000  00001253  2**0
+                  CONTENTS, READONLY
+
+
+
+
+objdump -x obj/kern/kernel
+Program Header:
+    LOAD off    0x00001000 vaddr 0xf0100000 paddr 0x00100000 align 2**12
+         filesz 0x0000712f memsz 0x0000712f flags r-x
+    LOAD off    0x00009000 vaddr 0xf0108000 paddr 0x00108000 align 2**12
+         filesz 0x0000a300 memsz 0x0000a944 flags rw-
+   STACK off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**4
+         filesz 0x00000000 memsz 0x00000000 flags rwx
+
+
+
+
+At the point when BIOS loads the bootloader address
+
+ 0x100000:	add    %al,(%bx,%si)
+   0x100002:	add    %al,(%bx,%si)
+   0x100004:	add    %al,(%bx,%si)
+   0x100006:	add    %al,(%bx,%si)
+   0x100008:	add    %al,(%bx,%si)
+   0x10000a:	add    %al,(%bx,%si)
+   0x10000c:	add    %al,(%bx,%si)
+   0x10000e:	add    %al,(%bx,%si)
+
+
+At the point when bootloader moves to kernel.
+  0x100000:	add    0x1bad (%eax),%dh
+   0x100006:	add    %al,(%eax)
+   0x100008:	decb   0x52(%edi)
+   0x10000b:	in     $0x66,%al
+   0x10000d:	movl   $0xb81234,0x472
+   0x100017:	add    %dl,(%ecx)
+   0x100019:	add    %cl,(%edi)
+   0x10001b:	and    %al,%bl
+
+
+
+
+At 0x00100000 instruction: movl %eax, %cr0
+
+0x100000:	add    0x1bad(%eax),%dh
+   0x100006:	add    %al,(%eax)
+   0x100008:	decb   0x52(%edi)
+   0x10000b:	in     $0x66,%al
+   0x10000d:	movl   $0xb81234,0x472
+   0x100017:	add    %dl,(%ecx)
+   0x100019:	add    %cl,(%edi)
+   0x10001b:	and    %al,%bl
+
+
+At 0xf0100000
+
+0xf0100000 <_start+4026531828>:	add    %al,(%eax)
+   0xf0100002 <_start+4026531830>:	add    %al,(%eax)
+   0xf0100004 <_start+4026531832>:	add    %al,(%eax)
+   0xf0100006 <_start+4026531834>:	add    %al,(%eax)
+   0xf0100008 <_start+4026531836>:	add    %al,(%eax)
+   0xf010000a <_start+4026531838>:	add    %al,(%eax)
+   0xf010000c <entry>:	add    %al,(%eax)
+   0xf010000e <entry+2>:	add    %al,(%eax)
+
+
+
+
+After the paging instruction is executed
+0x100000:	add    0x1bad(%eax),%dh
+   0x100006:	add    %al,(%eax)
+   0x100008:	decb   0x52(%edi)
+   0x10000b:	in     $0x66,%al
+   0x10000d:	movl   $0xb81234,0x472
+   0x100017:	add    %dl,(%ecx)
+   0x100019:	add    %cl,(%edi)
+   0x10001b:	and    %al,%bl
+
+ 0xf0100000 <_start+4026531828>:	add    0x1bad(%eax),%dh
+   0xf0100006 <_start+4026531834>:	add    %al,(%eax)
+   0xf0100008 <_start+4026531836>:	decb   0x52(%edi)
+   0xf010000b <_start+4026531839>:	in     $0x66,%al
+   0xf010000d <entry+1>:	movl   $0xb81234,0x472
+   0xf0100017 <entry+11>:	add    %dl,(%ecx)
+   0xf0100019 <entry+13>:	add    %cl,(%edi)
+   0xf010001b <entry+15>:	and    %al,%bl
+
+
+
+------------------------> Lets Fail it<----------------------------------
+
+
+(gdb) x/8 0x00100000
+   0x100000:	Cannot access memory at address 0x100000
+(gdb) x/8 0xf0100000
+   0xf0100000 <_start+4026531828>:	Cannot access memory at address 0xf01000
+
+
+----> Esp after kernel stack initialised<--------------
+esp            0xf0110000	0xf0110000 <entry_pgdir>
+
+
+#define PGSIZE		4096		// bytes mapped by a page
+
+#define KSTKSIZE	(8*PGSIZE) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
