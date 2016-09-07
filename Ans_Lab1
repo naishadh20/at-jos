@@ -1,3 +1,4 @@
+Exercise 3
 ljmp    $PROT_MODE_CSEG, $protcseg ----> Starts executing 32bit code.
 
  7d6b:	ff 15 18 00 01 00    	call   *0x10018----> Last instruction of bootloader.
@@ -9,24 +10,7 @@ ljmp    $PROT_MODE_CSEG, $protcseg ----> Starts executing 32bit code.
 
 
 
- 7d15:	55                   	push   %ebp
-    7d16:	89 e5                	mov    %esp,%ebp
-    7d18:	56                   	push   %esi
-    7d19:	53                   	push   %ebx
-
-----------> First 4 statements executed in bootmain (setting the stack pointer and base pointer)<---------------------------
-
-
-
 7d26:	e8 b1 ff ff ff       	call   7cdc <readseg>  ----> calling of readseg in bootmain.
-
-
-7cdc:	55                   	push   %ebp
-    7cdd:	89 e5                	mov    %esp,%ebp
-    7cdf:	57                   	push   %edi
-    7ce0:	56                   	push   %esi
-
-----------> First 4 statements executed in readseg (setting the stack pointer and base pointer)<---------------------------
 
 
  7d04:	e8 73 ff ff ff       	call   7c7c <readsect>  ------> Calling of readsect function// actually reading the sector.
@@ -104,8 +88,8 @@ For loop(end)
 
 
 
----------------------------------------------------------------------------------------------------------------------------------------------------------
-
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 
 objdump -h obj/kern/kernel
 
@@ -152,9 +136,10 @@ Program Header:
          filesz 0x0000a300 memsz 0x0000a944 flags rw-
    STACK off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**4
          filesz 0x00000000 memsz 0x00000000 flags rwx
+----------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 
-
-
+Exercise 6
 
 At the point when BIOS loads the bootloader address
 
@@ -179,7 +164,7 @@ At the point when bootloader moves to kernel.
    0x10001b:	and    %al,%bl
 
 
-
+Exercise 7
 
 At 0x00100000 instruction: movl %eax, %cr0
 
@@ -236,7 +221,7 @@ After the paging instruction is executed
 (gdb) x/8 0xf0100000
    0xf0100000 <_start+4026531828>:	Cannot access memory at address 0xf01000
 
-
+Exercise 9
 ----> Esp after kernel stack initialised<--------------
 esp            0xf0110000	0xf0110000 <entry_pgdir>
 
@@ -245,7 +230,7 @@ esp            0xf0110000	0xf0110000 <entry_pgdir>
 
 #define KSTKSIZE	(8*PGSIZE) 
 
-
+bootstack
 
 
 
