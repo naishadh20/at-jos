@@ -232,6 +232,110 @@ esp            0xf0110000	0xf0110000 <entry_pgdir>
 
 bootstack
 
+......................................................................................................................
+
+Exercise 10
+
+The target architecture is assumed to be i8086
+[f000:fff0]    0xffff0:	ljmp   $0xf000,$0xe05b
+0x0000fff0 in ?? ()
++ symbol-file obj/kern/kernel
+(gdb) b *0xf0100040
+Breakpoint 1 at 0xf0100040: file kern/init.c, line 13.
+(gdb) c
+Continuing.
+The target architecture is assumed to be i386
+=> 0xf0100040 <test_backtrace>:	push   %ebp
+
+Breakpoint 1, test_backtrace (x=5) at kern/init.c:13
+13	{
+(gdb) info registers
+eax            0x0	0
+ecx            0x3d4	980
+edx            0x3d5	981
+ebx            0x10094	65684
+esp            0xf010ffdc	0xf010ffdc
+ebp            0xf010fff8	0xf010fff8
+esi            0x10094	65684
+edi            0x0	0
+eip            0xf0100040	0xf0100040 <test_backtrace>
+eflags         0x82	[ SF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) c
+Continuing.
+=> 0xf0100040 <test_backtrace>:	push   %ebp
+
+Breakpoint 1, test_backtrace (x=4) at kern/init.c:13
+13	{
+(gdb) info registers
+eax            0x4	4
+ecx            0x3d4	980
+edx            0x3d5	981
+ebx            0x5	5
+esp            0xf010ffbc	0xf010ffbc
+ebp            0xf010ffd8	0xf010ffd8
+esi            0x10094	65684
+edi            0x0	0
+eip            0xf0100040	0xf0100040 <test_backtrace>
+eflags         0x6	[ PF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) c
+Continuing.
+=> 0xf0100040 <test_backtrace>:	push   %ebp
+
+Breakpoint 1, test_backtrace (x=3) at kern/init.c:13
+13	{
+(gdb) info registers
+eax            0x3	3
+ecx            0x3d4	980
+edx            0x3d5	981
+ebx            0x4	4
+esp            0xf010ff9c	0xf010ff9c
+ebp            0xf010ffb8	0xf010ffb8
+esi            0x10094	65684
+edi            0x0	0
+eip            0xf0100040	0xf0100040 <test_backtrace>
+eflags         0x2	[ ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) c
+Continuing.
+=> 0xf0100040 <test_backtrace>:	push   %ebp
+
+Breakpoint 1, test_backtrace (x=2) at kern/init.c:13
+13	{
+(gdb) info registers
+eax            0x2	2
+ecx            0x3d4	980
+edx            0x3d5	981
+ebx            0x3	3
+esp            0xf010ff7c	0xf010ff7c
+ebp            0xf010ff98	0xf010ff98
+esi            0x10094	65684
+edi            0x0	0
+eip            0xf0100040	0xf0100040 <test_backtrace>
+eflags         0x6	[ PF ]
+cs             0x8	8
+ss             0x10	16
+ds             0x10	16
+es             0x10	16
+fs             0x10	16
+gs             0x10	16
+(gdb) 
 
 
 
