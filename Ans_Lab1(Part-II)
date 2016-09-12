@@ -87,6 +87,23 @@ ebp f010ffd8 eip f01000e1 args:00000000 00001aac 00000644 00000000 00000000
 ebp f010fff8 eip f010003e args:00111021 00000000 00000000 00000000 00000000
 	      {standard input}:0: <unknown>+0
 
+Flow:
+Exercise 11
+line 37: 
+// Debug information about a particular instruction pointer
+	struct Eipdebuginfo {
+		const char *eip_file;		// Source code filename for EIP
+		int eip_line;			// Source code linenumber for EIP
+
+		const char *eip_fn_name;	// Name of function containing EIP
+						//  - Note: not null terminated!
+		int eip_fn_namelen;		// Length of function name
+		uintptr_t eip_fn_addr;		// Address of start of function
+		int eip_fn_narg;		// Number of function arguments
+	};
+
+.*s ---->  printf("%.*s\n", str_len, str);
+asterisk (*) to pass the width specifier/precision to printf()
 
 
 
