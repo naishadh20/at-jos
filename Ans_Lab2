@@ -1,27 +1,27 @@
 Exercise 10:
 
-i = 1
+i = 0
 esp            0xf010ffdc	0xf010ffdc
 ebp            0xf010fff8	0xf010fff8
 
-i =2
+i =1
 
 esp            0xf010ffbc	0xf010ffbc-----------> 20
 ebp            0xf010ffd8	0xf010ffd8---------------> 20
 
-i=3
+i=2
 esp            0xf010ff9c	0xf010ff9c
 ebp            0xf010ffb8	0xf010ffb8
 
-i=4
+i=3
 esp            0xf010ff7c	0xf010ff7c
 ebp            0xf010ff98	0xf010ff98
 
-i=5
+i=4
 esp            0xf010ff5c	0xf010ff5c
 ebp            0xf010ff78	0xf010ff78
 
-i =6
+i =5
 
 esp            0xf010ff3c	0xf010ff3c
 ebp            0xf010ff58	0xf010ff58
