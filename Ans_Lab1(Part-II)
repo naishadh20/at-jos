@@ -101,6 +101,8 @@ line 37:
 		uintptr_t eip_fn_addr;		// Address of start of function
 		int eip_fn_narg;		// Number of function arguments
 	};
+	
+int debuginfo_eip(uintptr_t eip, struct Eipdebuginfo *info);
 
 .*s ---->  printf("%.*s\n", str_len, str);
 asterisk (*) to pass the width specifier/precision to printf()
