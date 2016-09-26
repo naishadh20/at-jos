@@ -132,7 +132,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int total_pages = size/PGSIZE;// total no. of pages to be mapped.
 for(int i=0;i<total_pages;i++)
 {
-pde_t* new_page_table_entry = pgdir_walk(pgdir, (void*) va, 1);//gets the address of the page table entry
+pte_t* new_page_table_entry = pgdir_walk(pgdir, (void*) va, 1);//gets the address of the page table entry
 if(!new_page_table_entry)
 cprintf("Allocation failed");
 *new_page_table_entry = pa | (perm | PTE_P);// puts the physical address in that page table entry.
