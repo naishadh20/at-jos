@@ -200,11 +200,7 @@ cprintf("pages: %x\n", pages);
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
 
-	boot_map_region(kern_pgdir, 
-		UPAGES, 
-		PTSIZE, 
-		PADDR(pages), 
-		PTE_U);
+	boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
 cprintf("PADDR(pages) %x\n", PADDR(pages));
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
@@ -218,13 +214,9 @@ cprintf("PADDR(pages) %x\n", PADDR(pages));
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 
-	boot_map_region(kern_pgdir, 
-		KSTACKTOP-KSTKSIZE, 
-		KSTKSIZE, 
-		PADDR(bootstack), 
-		PTE_W);
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
 	cprintf("PADDR(bootstack) %x\n", PADDR(bootstack));
-;
+
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -235,11 +227,7 @@ cprintf("PADDR(pages) %x\n", PADDR(pages));
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
-boot_map_region(kern_pgdir, 
-		KERNBASE, 
-		-KERNBASE, 
-		0, 
-	PTE_W);
+boot_map_region(kern_pgdir, KERNBASE, 0xffffffff - KERNBASE, 0, PTE_W | PTE_P);
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
 
