@@ -13,23 +13,23 @@ int tab_idx =  PTX(va);
 pte_t *page_tbl_entry;
 struct PageInfo *page_dir;
 
-if(!(pgdir[dir_idx] & PTE_P))
+if(!(pgdir[dir_idx] & PTE_P)) //if relevant page table doesn't exist
 {
 	if (create !=0 )
 	{
-	page_dir = page_alloc(ALLOC_ZERO);
-		if(!page_dir)
+	page_dir = page_alloc(ALLOC_ZERO);//allocates a page filled with zeroes, clears pages.
+		if(!page_dir) //if allocation fails
 		{
 		cprintf ("allocation failed\n");
 		return NULL;
 		}
-	page_dir->pp_ref++;
+	page_dir->pp_ref++;//the new page's reference count is incremented
         pgdir[dir_idx] = page2pa(page_dir) | PTE_P | PTE_U | PTE_W; 
 	}
 	else
 	return NULL;
 }
-	page_tbl_entry = KADDR(PTE_ADDR(pgdir[dir_idx]));
+	page_tbl_entry = KADDR(PTE_ADDR(pgdir[dir_idx]));//kernel virtual address of page table entry address.
         return page_tbl_entry+tab_idx;
 }
 
@@ -82,13 +82,13 @@ _kaddr(const char *file, int line, physaddr_t pa)
 static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
-int total_pages = size/PGSIZE;
+int total_pages = size/PGSIZE;// total no. of pages to be mapped.
 for(int i=0;i<total_pages;i++)
 {
-pde_t* new_page_table_entry = pgdir_walk(pgdir, (void*) va, 1);
+pde_t* new_page_table_entry = pgdir_walk(pgdir, (void*) va, 1);//gets the address of the page table entry
 if(!new_page_table_entry)
 cprintf("Allocation failed");
-*new_page_table_entry = pa | (perm | PTE_P);
+*new_page_table_entry = pa | (perm | PTE_P);// puts the physical address in that page table entry.
 va= va+PGSIZE;
 pa= pa+PGSIZE;
 }
@@ -106,14 +106,14 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 
 	pte_t *page_table_entry;
 	page_table_entry =  pgdir_walk(pgdir, va, 0);
-		if (!page_table_entry || !(*page_table_entry & PTE_P))
+		if (!page_table_entry || !(*page_table_entry & PTE_P)) //if null address of the page table entry or if no page mapped at that va 
 		{
 		cprintf("unable to find page\n");
 		return NULL;
 		}
 		if(pte_store != NULL)
 		{
-		*pte_store = page_table_entry;
+		*pte_store = page_table_entry;// store in pte_store the address of the looked up page
 		}
 	return pa2page(PTE_ADDR(*page_table_entry)); 
 }
@@ -149,8 +149,9 @@ page_found = page_lookup(pgdir, va, &page_tbl_entry);
 		cprintf("unable to find page\n");
 		return;
 	}
-	 page_decref(page_found);
-	*page_tbl_entry = 0;
+	 page_decref(page_found); //The ref count on the physical page should decrement.
+                             //The physical page should be freed if the refcount reaches 0.
+	*page_tbl_entry = 0; //pg table entry corresponding to 'va' should be set to 0.
 	 tlb_invalidate(pgdir, va);
 }
 ////////////////////////////////////////////////////////
@@ -185,20 +186,21 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	pte_t *page_tbl_entry;
-	 page_tbl_entry= pgdir_walk(pgdir, va, 1);
-	if(! page_tbl_entry)
+	 page_tbl_entry= pgdir_walk(pgdir, va, 1);//Page is always created and pte pointer is returned
+	if(! page_tbl_entry)// if page table could not be allocated.
 		{
 		cprintf("Unable to find the page\n");
 		return -E_NO_MEM;
 		}
-	 pp->pp_ref++;
-	if (*page_tbl_entry & PTE_P)
+	 pp->pp_ref++;//increment the reference counter before hand as in page_remove the pointer is decremented. So, ppref may reach                     
+	//zero,page might be freed before being mapped.
+	if (*page_tbl_entry & PTE_P)//if mapped to physical page
 	{
 	cprintf("Page removed\n");
-	page_remove(pgdir, va);
+	page_remove(pgdir, va); //decrement ref pointer, clear the page table entry and invalidate tlb.
 	}
-*page_tbl_entry = page2pa(pp) | perm | PTE_P;
-return 0;
+*page_tbl_entry = page2pa(pp) | perm | PTE_P;//assign the new physical address of the page pp to pte.
+return 0;//success
 }
 
 E_NO_MEM	= 4,	// Request failed due to memory shortage (enum in error.h)
