@@ -112,7 +112,7 @@ _kaddr(const char *file, int line, physaddr_t pa)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Input Arguments: pointer to the page directory, pointer to va, size, permission bit 
-//Returns: Pointer to the page table entry
+//Returns: Void
 
 //
 // Map [va, va+size) of virtual address space to physical [pa, pa+size)
