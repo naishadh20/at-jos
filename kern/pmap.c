@@ -8,14 +8,17 @@
 
 #include <kern/pmap.h>
 #include <kern/kclock.h>
+#include <kern/env.h>
 
 // These variables are set by i386_detect_memory()
-size_t npages;			// Amount of physical memory (in pages)
+size_t npages;
+int index;			// Amount of physical memory (in pages)
 static size_t npages_basemem;	// Amount of base memory (in pages)
 
 // These variables are set in mem_init()
 pde_t *kern_pgdir;		// Kernel's initial page directory
 struct PageInfo *pages;		// Physical page state array
+struct Env *envs;		//------------------------------------------------------> all environments
 static struct PageInfo *page_free_list;	// Free list of physical pages
 
 
@@ -169,10 +172,21 @@ cprintf("reached point 2\n");
 pages = (struct PageInfo *) boot_alloc(sizeof(struct PageInfo) * npages);
 memset(pages, 0, sizeof(struct PageInfo) * npages);
 
+envs = (struct Env *) boot_alloc(sizeof(struct Env) * NENV);
+memset(envs, 0, sizeof(struct Env) * NENV);
+
 	cprintf("npages: %d\n", npages);
 	cprintf("npages_basemem: %d\n", npages_basemem);
 cprintf("pages: %x\n", pages);
 
+cprintf("NENV: %d\n", NENV);
+	//cprintf("npages_basemem: %d\n", npages_basemem);
+cprintf("nenv: %x\n", envs);
+
+
+	//////////////////////////////////////////////////////////////////////
+	// Make 'envs' point to an array of size 'NENV' of 'struct Env'.
+	// LAB 3: Your code here.
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -204,6 +218,25 @@ cprintf("pages: %x\n", pages);
 	cprintf("PADDR(pages) %x\n", PADDR(pages));
 	cprintf("UPAGES is %08x\n", UPAGES);
 	cprintf("PTSIZE is %08x\n", PTSIZE);
+
+	//////////////////////////////////////////////////////////////////////
+	// Map the 'envs' array read-only by the user at linear address UENVS
+	// (ie. perm = PTE_U | PTE_P).
+	// Permissions:
+	//    - the new image at UENVS  -- kernel R, user R
+	//    - envs itself -- kernel RW, user NONE
+	// LAB 3: Your code here.
+
+boot_map_region(kern_pgdir,
+    UENVS,
+    PTSIZE,
+    PADDR(envs),
+    PTE_U);
+
+cprintf("PADDR(envs) %x\n", PADDR(envs));
+	cprintf("UENVS is %08x\n", UENVS);
+	cprintf("PTSIZE is %08x\n", PTSIZE);
+
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
 	// stack.  The kernel stack grows down from virtual address KSTACKTOP.
@@ -233,6 +266,7 @@ cprintf("pages: %x\n", pages);
 	// Your code goes here:
 	boot_map_region(kern_pgdir, KERNBASE, 0xffffffff - KERNBASE, 0, PTE_W | PTE_P);
 	// Check that the initial page directory has been set up correctly.
+
 	check_kern_pgdir();
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
@@ -272,29 +306,21 @@ cprintf("pages: %x\n", pages);
 void
 page_init(void)
 {
-
-	 size_t i;
+    size_t i;
     for (i = 1; i < npages_basemem; i++) {
-//cprintf("i is %d",i);
-//cprintf("npages_basemem is %d",npages_basemem);
-
-       pages[i].pp_ref = 0;
+        pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
         page_free_list = &pages[i];
     }
-    int med = (int)ROUNDUP(((char*)pages) + (sizeof(struct PageInfo) * npages) - 0xf0000000, PGSIZE)/PGSIZE;
-    cprintf("%d\n", ((char*)pages) + (sizeof(struct PageInfo) * npages));
+    int med = (int)ROUNDUP(((char*)envs) + (sizeof(struct Env) * NENV) - 0xf0000000, PGSIZE)/PGSIZE;
+    cprintf("%x\n", ((char*)envs) + (sizeof(struct Env) * NENV));
     cprintf("med=%d\n", med);
     for (i = med; i < npages; i++) {
         pages[i].pp_ref = 0;
         pages[i].pp_link = page_free_list;
         page_free_list = &pages[i];
     }
-
-
-cprintf("reached point 3\n");
 }
-
 //
 // Allocates a physical page.  If (alloc_flags & ALLOC_ZERO), fills the entire
 // returned physical page with '\0' bytes.  Does NOT increment the reference
@@ -573,6 +599,51 @@ tlb_invalidate(pde_t *pgdir, void *va)
 	invlpg(va);
 }
 
+static uintptr_t user_mem_check_addr;
+
+//
+// Check that an environment is allowed to access the range of memory
+// [va, va+len) with permissions 'perm | PTE_P'.
+// Normally 'perm' will contain PTE_U at least, but this is not required.
+// 'va' and 'len' need not be page-aligned; you must test every page that
+// contains any of that range.  You will test either 'len/PGSIZE',
+// 'len/PGSIZE + 1', or 'len/PGSIZE + 2' pages.
+//
+// A user program can access a virtual address if (1) the address is below
+// ULIM, and (2) the page table gives it permission.  These are exactly
+// the tests you should implement here.
+//
+// If there is an error, set the 'user_mem_check_addr' variable to the first
+// erroneous virtual address.
+//
+// Returns 0 if the user program can access this range of addresses,
+// and -E_FAULT otherwise.
+//
+int
+user_mem_check(struct Env *env, const void *va, size_t len, int perm)
+{
+	// LAB 3: Your code here.
+
+	return 0;
+}
+
+//
+// Checks that environment 'env' is allowed to access the range
+// of memory [va, va+len) with permissions 'perm | PTE_U | PTE_P'.
+// If it can, then the function simply returns.
+// If it cannot, 'env' is destroyed and, if env is the current
+// environment, this function will not return.
+//
+void
+user_mem_assert(struct Env *env, const void *va, size_t len, int perm)
+{
+	if (user_mem_check(env, va, len, perm | PTE_U) < 0) {
+		cprintf("[%08x] user_mem_check assertion failure for "
+			"va %08x\n", env->env_id, user_mem_check_addr);
+		env_destroy(env);	// may not return
+	}
+}
+
 
 // --------------------------------------------------------------
 // Checking functions.
@@ -738,6 +809,10 @@ check_kern_pgdir(void)
 	for (i = 0; i < n; i += PGSIZE)
 		assert(check_va2pa(pgdir, UPAGES + i) == PADDR(pages) + i);
 
+	// check envs array (new test for lab 3)
+	n = ROUNDUP(NENV*sizeof(struct Env), PGSIZE);
+	for (i = 0; i < n; i += PGSIZE)
+		assert(check_va2pa(pgdir, UENVS + i) == PADDR(envs) + i);
 
 	// check phys mem
 	for (i = 0; i < npages * PGSIZE; i += PGSIZE)
@@ -754,6 +829,7 @@ check_kern_pgdir(void)
 		case PDX(UVPT):
 		case PDX(KSTACKTOP-1):
 		case PDX(UPAGES):
+		case PDX(UENVS):
 			assert(pgdir[i] & PTE_P);
 			break;
 		default:
