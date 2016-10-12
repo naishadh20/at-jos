@@ -47,9 +47,62 @@
  * Lab 3: Your code here for generating entry points for the different traps.
  */
 
+//generating functions for all the interrupts that we need to handle
+    TRAPHANDLER_NOEC(i0, 0)
+    TRAPHANDLER_NOEC(i1, 1)
+    TRAPHANDLER_NOEC(i3, 3)
+    TRAPHANDLER_NOEC(i4, 4)
+    TRAPHANDLER_NOEC(i5, 5)
+    TRAPHANDLER_NOEC(i6, 6)
+    TRAPHANDLER_NOEC(i7, 7)
+    TRAPHANDLER(i8, 8)          // Error code pushed
+    TRAPHANDLER_NOEC(i9, 9)
+    TRAPHANDLER(i10, 10)	// Error code pushed
+    TRAPHANDLER(i11, 11)	// Error code pushed
+    TRAPHANDLER(i12, 12)	// Error code pushed
+    TRAPHANDLER(i13, 13)	// Error code pushed
+    TRAPHANDLER(i14, 14)	// Error code pushed
+    TRAPHANDLER_NOEC(i16, 16)
 
 
 /*
+
+Description                       Interrupt     Error Code
+Number
+
+Divide error                       0            No
+Debug exceptions                   1            No
+Breakpoint                         3            No
+Overflow                           4            No
+Bounds check                       5            No
+Invalid opcode                     6            No
+Coprocessor not available          7            No
+System error                       8            Yes (always 0)
+Coprocessor Segment Overrun        9            No
+Invalid TSS                       10            Yes
+Segment not present               11            Yes
+Stack exception                   12            Yes
+General protection fault          13            Yes
+Page fault                        14            Yes
+Coprocessor error                 16            No
+Two-byte SW interrupt             0-255         No
+
+
+
+*/
+/*
  * Lab 3: Your code here for _alltraps
  */
+_alltraps:
+    pushl %ds //cpu registers 
+    pushl %es
+    pushal // General purpose registers
+   movw $ GD_KD, %ax
+  movw %ax, %ds
+  movw %ax, %es
+    pushl %esp // Argument for trap()
+    call trap
+
+
+
 
