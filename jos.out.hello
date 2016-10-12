@@ -1,0 +1,90 @@
++ ld obj/kern/kernel
++ mk obj/kern/kernel.img
+
+(process:9219): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
+
+(process:9221): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
+6828 decimal is x 1, y 3, z 4
+15254 octal!
+Physical memory: 66556K available, base = 640K, extended = 65532K
+nextfree(old)--> f017e000
+next(old)--->f017e000
+n-->00001000
+n>0 loop
+nextfree-->f017f000
+next--->f017e000
+reached point 1
+reached point 2
+nextfree(old)--> f017f000
+next(old)--->f017f000
+n-->000207f8
+n>0 loop
+nextfree-->f01a0000
+next--->f017f000
+nextfree(old)--> f01a0000
+next(old)--->f01a0000
+n-->00018000
+n>0 loop
+nextfree-->f01b8000
+next--->f01a0000
+npages: 16639
+npages_basemem: 160
+pages: f017f000
+NENV: 1024
+nenv: f01a0000
+f01b8000
+med=440
+reached point 4
+check_page_alloc() succeeded!
+unable to find page
+allocation failed
+Unable to find the page
+Page removed
+reached 1Page removed
+reached 2Page removed
+reached 3allocation failed
+Unable to find the page
+Page removed
+Page removed
+check_page() succeeded!
+reached point 6
+PADDR(pages) 17f000
+UPAGES is ef000000
+PTSIZE is 00400000
+PADDR(envs) 1a0000
+UENVS is eec00000
+PTSIZE is 00400000
+KSTACKTOP-KSTKSIZE is efff8000
+is 00008000
+PADDR(bootstack) 111000
+check_kern_pgdir() succeeded!
+reached point 4
+Page removed
+check_page_installed_pgdir() succeeded!
+envs: f01a0000, e: f01a0000, e->env_id: 1000
+env_id, 1000
+[00000000] new env 00001000
+Incoming TRAP frame at 0xefffffbc
+TRAP frame at 0xf01a0000
+  edi  0x00000000
+  esi  0x00000000
+  ebp  0xeebfde60
+  oesp 0xefffffdc
+  ebx  0x00000000
+  edx  0xeebfde88
+  ecx  0x0000000d
+  eax  0x00000000
+  es   0x----0023
+  ds   0x----0023
+  trap 0x0000000d General Protection
+  err  0x00000182
+  eip  0x00800a5e
+  cs   0x----001b
+  flag 0x00000092
+  esp  0xeebfde54
+  ss   0x----0023
+[00001000] free env 00001000
+Destroyed the only environment - nothing more to do!
+Welcome to the JOS kernel monitor!
+Type 'help' for a list of commands.
+qemu: terminating on signal 15 from pid 9135
