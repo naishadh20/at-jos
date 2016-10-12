@@ -64,10 +64,57 @@ trap_init(void)
 {
 	extern struct Segdesc gdt[];
 
-	// LAB 3: Your code here.
+    // LAB 3: Your code here.
+    void i0();
+    void i1();
+    void i3();
+    void i4();
+    void i5();
+    void i6();
+    void i7();
+    void i8();
+    void i9();
+    void i10();
+    void i11();
+    void i12();
+    void i13();
+    void i14();
+    void i16();
 
-	// Per-CPU setup 
-	trap_init_percpu();
+// Set up a normal interrupt/trap gate descriptor.
+// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
+    //   see section 9.6.1.3 of the i386 reference: "The difference between
+    //   an interrupt gate and a trap gate is in the effect on IF (the
+    //   interrupt-enable flag). An interrupt that vectors through an
+    //   interrupt gate resets IF, thereby preventing other interrupts from
+    //   interfering with the current interrupt handler. A subsequent IRET
+    //   instruction restores IF to the value in the EFLAGS image on the
+    //   stack. An interrupt through a trap gate does not change IF."
+// - sel: Code segment selector for interrupt/trap handler
+// - off: Offset in code segment for interrupt/trap handler
+// - dpl: Descriptor Privilege Level -
+//	  the privilege level required for software to invoke
+//	  this interrupt/trap gate explicitly using an int instruction.
+//#define SETGATE(gate, istrap, sel, off, dpl)	
+
+    SETGATE(idt[0], 0, GD_KT, i0, 0);
+    SETGATE(idt[1], 0, GD_KT, i1, 0);
+    SETGATE(idt[3], 0, GD_KT, i3, 0);
+    SETGATE(idt[4], 0, GD_KT, i4, 0);
+    SETGATE(idt[5], 0, GD_KT, i5, 0);
+    SETGATE(idt[6], 0, GD_KT, i6, 0);
+    SETGATE(idt[7], 0, GD_KT, i7, 0);
+    SETGATE(idt[8], 0, GD_KT, i8, 0);
+    SETGATE(idt[9], 0, GD_KT, i9, 0);
+    SETGATE(idt[10], 0, GD_KT,i10, 0);
+    SETGATE(idt[11], 0, GD_KT, i11, 0);
+    SETGATE(idt[12], 0, GD_KT, i12, 0);
+    SETGATE(idt[13], 0, GD_KT, i13, 0);
+    SETGATE(idt[14], 0, GD_KT, i14, 0);
+    SETGATE(idt[16], 0, GD_KT, i16, 0);
+
+    // Per-CPU setup 
+    trap_init_percpu();
 }
 
 // Initialize and load the per-CPU TSS and IDT
@@ -146,6 +193,11 @@ trap_dispatch(struct Trapframe *tf)
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
+	if (tf->tf_trapno == T_PGFLT) {
+		page_fault_handler(tf);
+		cprintf("pagefault occured!\n");
+		return;
+}
 	if (tf->tf_cs == GD_KT)
 		panic("unhandled trap in kernel");
 	else {
