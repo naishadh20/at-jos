@@ -63,6 +63,7 @@
     TRAPHANDLER(i13, 13)	// Error code pushed
     TRAPHANDLER(i14, 14)	// Error code pushed
     TRAPHANDLER_NOEC(i16, 16)
+    TRAPHANDLER_NOEC(i48, 48) //syscall
 
 
 /*

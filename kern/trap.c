@@ -80,6 +80,7 @@ trap_init(void)
     void i13();
     void i14();
     void i16();
+    void i48();
 
 // Set up a normal interrupt/trap gate descriptor.
 // - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
@@ -97,21 +98,22 @@ trap_init(void)
 //	  this interrupt/trap gate explicitly using an int instruction.
 //#define SETGATE(gate, istrap, sel, off, dpl)	
 
-    SETGATE(idt[0], 1, GD_KT, i0, 0);
-    SETGATE(idt[1], 1, GD_KT, i1, 0);
-    SETGATE(idt[3], 1, GD_KT, i3, 0);
-    SETGATE(idt[4], 1, GD_KT, i4, 0);
-    SETGATE(idt[5], 1, GD_KT, i5, 0);
-    SETGATE(idt[6], 1, GD_KT, i6, 0);
-    SETGATE(idt[7], 1, GD_KT, i7, 0);
-    SETGATE(idt[8], 1, GD_KT, i8, 0);
-    SETGATE(idt[9], 1, GD_KT, i9, 0);
-    SETGATE(idt[10], 1, GD_KT,i10, 0);
-    SETGATE(idt[11], 1, GD_KT, i11, 0);
-    SETGATE(idt[12], 1, GD_KT, i12, 0);
-    SETGATE(idt[13], 1, GD_KT, i13, 0);
-    SETGATE(idt[14], 1, GD_KT, i14, 0);
-    SETGATE(idt[16], 1, GD_KT, i16, 0);
+	    SETGATE(idt[0], 1, GD_KT, i0, 0);
+	    SETGATE(idt[1], 1, GD_KT, i1, 0);
+	    SETGATE(idt[3], 1, GD_KT, i3, 3);
+	    SETGATE(idt[4], 1, GD_KT, i4, 0);
+	    SETGATE(idt[5], 1, GD_KT, i5, 0);
+	    SETGATE(idt[6], 1, GD_KT, i6, 0);
+	    SETGATE(idt[7], 1, GD_KT, i7, 0);
+	    SETGATE(idt[8], 1, GD_KT, i8, 0);
+	    SETGATE(idt[9], 1, GD_KT, i9, 0);
+	    SETGATE(idt[10], 1, GD_KT,i10, 0);
+	    SETGATE(idt[11], 1, GD_KT, i11, 0);
+	    SETGATE(idt[12], 1, GD_KT, i12, 0);
+	    SETGATE(idt[13], 1, GD_KT, i13, 0);
+	    SETGATE(idt[14], 1, GD_KT, i14, 0);
+	    SETGATE(idt[16], 1, GD_KT, i16, 0);
+	    SETGATE(idt[48], 1, GD_KT, i48, 3);	
 
     // Per-CPU setup 
     trap_init_percpu();
@@ -193,6 +195,23 @@ trap_dispatch(struct Trapframe *tf)
 
 	// Unexpected trap: The user process or the kernel has a bug.
 	print_trapframe(tf);
+if(tf->tf_trapno == T_SYSCALL){
+cprintf("syscall occured!\n");
+syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+return;
+
+
+}
+
+
+
+if (tf->tf_trapno == T_BRKPT) {
+cprintf("breackpoint occured!\n");
+    monitor(tf);
+    return;
+}
+
+
 	if (tf->tf_trapno == T_PGFLT) {
 		page_fault_handler(tf);
 		cprintf("pagefault occured!\n");
