@@ -97,21 +97,21 @@ trap_init(void)
 //	  this interrupt/trap gate explicitly using an int instruction.
 //#define SETGATE(gate, istrap, sel, off, dpl)	
 
-    SETGATE(idt[0], 0, GD_KT, i0, 0);
-    SETGATE(idt[1], 0, GD_KT, i1, 0);
-    SETGATE(idt[3], 0, GD_KT, i3, 0);
-    SETGATE(idt[4], 0, GD_KT, i4, 0);
-    SETGATE(idt[5], 0, GD_KT, i5, 0);
-    SETGATE(idt[6], 0, GD_KT, i6, 0);
-    SETGATE(idt[7], 0, GD_KT, i7, 0);
-    SETGATE(idt[8], 0, GD_KT, i8, 0);
-    SETGATE(idt[9], 0, GD_KT, i9, 0);
-    SETGATE(idt[10], 0, GD_KT,i10, 0);
-    SETGATE(idt[11], 0, GD_KT, i11, 0);
-    SETGATE(idt[12], 0, GD_KT, i12, 0);
-    SETGATE(idt[13], 0, GD_KT, i13, 0);
-    SETGATE(idt[14], 0, GD_KT, i14, 0);
-    SETGATE(idt[16], 0, GD_KT, i16, 0);
+    SETGATE(idt[0], 1, GD_KT, i0, 0);
+    SETGATE(idt[1], 1, GD_KT, i1, 0);
+    SETGATE(idt[3], 1, GD_KT, i3, 0);
+    SETGATE(idt[4], 1, GD_KT, i4, 0);
+    SETGATE(idt[5], 1, GD_KT, i5, 0);
+    SETGATE(idt[6], 1, GD_KT, i6, 0);
+    SETGATE(idt[7], 1, GD_KT, i7, 0);
+    SETGATE(idt[8], 1, GD_KT, i8, 0);
+    SETGATE(idt[9], 1, GD_KT, i9, 0);
+    SETGATE(idt[10], 1, GD_KT,i10, 0);
+    SETGATE(idt[11], 1, GD_KT, i11, 0);
+    SETGATE(idt[12], 1, GD_KT, i12, 0);
+    SETGATE(idt[13], 1, GD_KT, i13, 0);
+    SETGATE(idt[14], 1, GD_KT, i14, 0);
+    SETGATE(idt[16], 1, GD_KT, i16, 0);
 
     // Per-CPU setup 
     trap_init_percpu();
