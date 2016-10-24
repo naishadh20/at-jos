@@ -206,10 +206,11 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		// (unsigned) octal
 		case 'o':
 			// Replace this with your code.
-			putch('X', putdat);
-			putch('X', putdat);
-			putch('X', putdat);
-			break;
+			num = getuint(&ap, lflag);
+			base = 8;
+int x = 1, y = 3, z = 4; //--------------------------------------->> Extra
+cprintf("x %d, y %x, z %d\n", x, y, z);//-------------------------->> Extra
+			goto number;
 
 		// pointer
 		case 'p':
@@ -226,6 +227,7 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 			base = 16;
 		number:
 			printnum(putch, putdat, num, base, width, padc);
+
 			break;
 
 		// escaped '%' character
@@ -240,7 +242,9 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 				/* do nothing */;
 			break;
 		}
+
 	}
+
 }
 
 void
