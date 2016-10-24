@@ -161,6 +161,88 @@ memset((void *)ph->p_va, 0, ph->p_memsz);
 
 
 
+static void
+trap_dispatch(struct Trapframe *tf)
+{
+	// Handle processor exceptions.
+	// LAB 3: Your code here.
+	uint32_t syscallNO, a1, a2, a3, a4, a5;
+	switch(tf->tf_trapno)
+	{
+		case T_PGFLT:
+			page_fault_handler(tf);
+			break;
+		case T_BRKPT:
+			print_trapframe(tf);
+			monitor(NULL);
+			break;
+		case T_SYSCALL:
+			
+			/*asm volatile("movl %%eax,%0" : "=r" (syscallNO));
+			asm volatile("movl %%edx,%0" : "=r" (a1));
+			asm volatile("movl %%ecx,%0" : "=r" (a2));
+			asm volatile("movl %%ebx,%0" : "=r" (a3));
+			asm volatile("movl %%edi,%0" : "=r" (a4));
+			asm volatile("movl %%esi,%0" : "=r" (a5));*/
+			//cprintf("In Trap Dispatch, eax val: %u",tf->tf_regs.reg_eax);
+			syscallNO = tf->tf_regs.reg_eax;
+			a1 = tf->tf_regs.reg_edx;
+			a2 = tf->tf_regs.reg_ecx;
+			a3 = tf->tf_regs.reg_ebx;
+			a4 = tf->tf_regs.reg_edi;
+			a5 = tf->tf_regs.reg_esi;
+			tf->tf_regs.reg_eax = syscall(syscallNO, a1,a2,a3,a4,a5);
+			break;
+		default:
+			print_trapframe(tf);
+			if (tf->tf_cs == GD_KT)
+				panic("unhandled trap in kernel");
+			else 
+			{
+				env_destroy(curenv);
+				return;
+			}
+	}	
+	
+	// Unexpected trap: The user process or the kernel has a bug.
+	
+}
+
+
+
+
+static void
+trap_dispatch(struct Trapframe *tf)
+{
+	// Handle processor exceptions.
+	// LAB 3: Your code here.
+
+	// Unexpected trap: The user process or the kernel has a bug.
+	
+if(tf->tf_trapno == T_SYSCALL){
+cprintf("syscall occured!\n");
+syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+}
+
+
+
+if (tf->tf_trapno == T_BRKPT) {
+cprintf("breackpoint occured!\n");
+    monitor(tf);
+ }
+
+if (tf->tf_trapno == T_PGFLT) {
+	page_fault_handler(tf);
+	cprintf("pagefault occured!\n");
+		
+}
+	if (tf->tf_cs == GD_KT)
+		panic("unhandled trap in kernel");
+	else {
+		env_destroy(curenv);
+		return;
+	}
+}
 
 
 
@@ -208,7 +290,10 @@ memset((void *)ph->p_va, 0, ph->p_memsz);
 
 
 
-0xf0103778
+
+
+
+
 
 
 

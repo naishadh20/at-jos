@@ -26,6 +26,23 @@ struct Pseudodesc idt_pd = {
 };
 
 
+void i0();
+    void i1();
+    void i3();
+    void i4();
+    void i5();
+    void i6();
+    void i7();
+    void i8();
+    void i9();
+    void i10();
+    void i11();
+    void i12();
+    void i13();
+    void i14();
+    void i16();
+    void i48();
+
 static const char *trapname(int trapno)
 {
 	static const char * const excnames[] = {
@@ -64,41 +81,8 @@ trap_init(void)
 {
 	extern struct Segdesc gdt[];
 
-    // LAB 3: Your code here.
-    void i0();
-    void i1();
-    void i3();
-    void i4();
-    void i5();
-    void i6();
-    void i7();
-    void i8();
-    void i9();
-    void i10();
-    void i11();
-    void i12();
-    void i13();
-    void i14();
-    void i16();
-    void i48();
-
-// Set up a normal interrupt/trap gate descriptor.
-// - istrap: 1 for a trap (= exception) gate, 0 for an interrupt gate.
-    //   see section 9.6.1.3 of the i386 reference: "The difference between
-    //   an interrupt gate and a trap gate is in the effect on IF (the
-    //   interrupt-enable flag). An interrupt that vectors through an
-    //   interrupt gate resets IF, thereby preventing other interrupts from
-    //   interfering with the current interrupt handler. A subsequent IRET
-    //   instruction restores IF to the value in the EFLAGS image on the
-    //   stack. An interrupt through a trap gate does not change IF."
-// - sel: Code segment selector for interrupt/trap handler
-// - off: Offset in code segment for interrupt/trap handler
-// - dpl: Descriptor Privilege Level -
-//	  the privilege level required for software to invoke
-//	  this interrupt/trap gate explicitly using an int instruction.
-//#define SETGATE(gate, istrap, sel, off, dpl)	
-
-	    SETGATE(idt[0], 1, GD_KT, i0, 0);
+	// LAB 3: Your code here.
+	SETGATE(idt[0], 1, GD_KT, i0, 0);
 	    SETGATE(idt[1], 1, GD_KT, i1, 0);
 	    SETGATE(idt[3], 1, GD_KT, i3, 3);
 	    SETGATE(idt[4], 1, GD_KT, i4, 0);
@@ -115,8 +99,9 @@ trap_init(void)
 	    SETGATE(idt[16], 1, GD_KT, i16, 0);
 	    SETGATE(idt[48], 1, GD_KT, i48, 3);	
 
-    // Per-CPU setup 
-    trap_init_percpu();
+
+	// Per-CPU setup 
+	trap_init_percpu();
 }
 
 // Initialize and load the per-CPU TSS and IDT
@@ -168,7 +153,8 @@ print_trapframe(struct Trapframe *tf)
 	cprintf("  eip  0x%08x\n", tf->tf_eip);
 	cprintf("  cs   0x----%04x\n", tf->tf_cs);
 	cprintf("  flag 0x%08x\n", tf->tf_eflags);
-	if ((tf->tf_cs & 3) != 0) {
+	if ((tf->tf_cs & 3) != 0) 
+	{
 		cprintf("  esp  0x%08x\n", tf->tf_esp);
 		cprintf("  ss   0x----%04x\n", tf->tf_ss);
 	}
@@ -192,37 +178,32 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-
-	// Unexpected trap: The user process or the kernel has a bug.
-	print_trapframe(tf);
-if(tf->tf_trapno == T_SYSCALL){
-cprintf("syscall occured!\n");
-syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
-return;
-
-
-}
-
-
-
-if (tf->tf_trapno == T_BRKPT) {
-cprintf("breackpoint occured!\n");
-    monitor(tf);
-    return;
-}
-
-
-	if (tf->tf_trapno == T_PGFLT) {
-		page_fault_handler(tf);
-		cprintf("pagefault occured!\n");
-		return;
-}
-	if (tf->tf_cs == GD_KT)
-		panic("unhandled trap in kernel");
-	else {
-		env_destroy(curenv);
-		return;
-	}
+	
+	switch(tf->tf_trapno)
+	{
+		case T_PGFLT:
+			page_fault_handler(tf);
+			break;
+		case T_BRKPT:
+			print_trapframe(tf);
+			monitor(tf);
+			break;
+		case T_SYSCALL:
+			tf->tf_regs.reg_eax = syscall(tf->tf_regs.reg_eax, tf->tf_regs.reg_edx, tf->tf_regs.reg_ecx,tf->tf_regs.reg_ebx, tf->tf_regs.reg_edi, tf->tf_regs.reg_esi);
+			break;
+		default:
+			print_trapframe(tf);
+			if (tf->tf_cs == GD_KT)
+				panic("unhandled trap in kernel");
+			else 
+			{
+				env_destroy(curenv);
+				return;
+			}
+	}	
+	
+	
+	
 }
 
 void
@@ -231,14 +212,15 @@ trap(struct Trapframe *tf)
 	// The environment may have set DF and some versions
 	// of GCC rely on DF being clear
 	asm volatile("cld" ::: "cc");
-
+	///cprintf("Current ENV Status:%d\nRUNNING VALUE:%d\n",curenv->env_status,ENV_RUNNING);
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
 	assert(!(read_eflags() & FL_IF));
-
+	//print_trapframe(tf);
+	
 	cprintf("Incoming TRAP frame at %p\n", tf);
-
+	
 	if ((tf->tf_cs & 3) == 3) {
 		// Trapped from user mode.
 		assert(curenv);
@@ -257,7 +239,7 @@ trap(struct Trapframe *tf)
 
 	// Dispatch based on what type of trap occurred
 	trap_dispatch(tf);
-
+	
 	// Return to the current environment, which should be running.
 	assert(curenv && curenv->env_status == ENV_RUNNING);
 	env_run(curenv);
