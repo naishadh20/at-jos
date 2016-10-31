@@ -335,20 +335,42 @@ page_init(void)
 	//     Some of it is in use, some is free. Where is the kernel
 	//     in physical memory?  Which pages are already in use for
 	//     page tables and other data structures?
-	// 
+	//
 	// Change the code to reflect this.
 	// NB: DO NOT actually touch the physical memory corresponding to
 	// free pages!
-	size_t i;
-	for (i = 1; i < MPENTRY_PADDR/PGSIZE; i++) {
+
+	size_t i=0;
+	pages[i].pp_ref = 1;
+	pages[i].pp_link = NULL;
+	size_t upper = PGNUM(PADDR(boot_alloc(0)));
+	cprintf("upper:%08x",upper);
+	cprintf("lower:%08x",EXTPHYSMEM/PGSIZE);
+	
+	for (i = 1; i < MPENTRY_PADDR/PGSIZE; i++) { // Lab 4: MPENTRY_PADDR is the entry address for Multiprocessors. Should not be on pagefreelist
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
+	    }	
+	pages[MPENTRY_PADDR/PGSIZE].pp_ref = 1;
+	pages[MPENTRY_PADDR/PGSIZE].pp_link = NULL;
+
+	for (i = (MPENTRY_PADDR/PGSIZE)+1; i < npages_basemem; i++) {
+		pages[i].pp_ref = 0;
+		pages[i].pp_link = page_free_list;
+		page_free_list = &pages[i];
+	    }
+
+	for (i = IOPHYSMEM/PGSIZE; i < EXTPHYSMEM/PGSIZE; i++) {
+		pages[i].pp_ref = 1;
+		pages[i].pp_link = NULL;
 	}
-	int point = (int)ROUNDUP(((char*)envs) + (sizeof(struct Env) * NENV) - 0xf0000000, PGSIZE)/PGSIZE;
-	//cprintf("%x\n", ((char*)envs) + (sizeof(struct Env) * NENV));
-	//cprintf("med=%d\n", med);
-	for (i = point; i < npages; i++) {
+
+	for (i = EXTPHYSMEM/PGSIZE; i < upper; i++) {
+		pages[i].pp_ref = 1;
+		pages[i].pp_link = NULL;
+	}
+	for (i = upper; i < npages; i++) {
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
