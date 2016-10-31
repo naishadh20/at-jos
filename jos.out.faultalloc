@@ -1,9 +1,9 @@
 + ld obj/kern/kernel
 + mk obj/kern/kernel.img
 
-(process:11209): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
+(process:10318): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
 
-(process:11211): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
+(process:10320): GLib-WARNING **: /build/glib2.0-7IO_Yw/glib2.0-2.48.1/./glib/gmem.c:483: custom memory allocation vtable not supported
 6828 decimal is x 1, y 3, z 4
 15254 octal!
 Physical memory: 66556K available, base = 640K, extended = 65532K
@@ -34,4 +34,6 @@ Virtual Address efff8000 mapped to Physical Address 115000
 PADDR(bootstack) 115000
 Virtual Address f0000000 mapped to Physical Address 0
 kernel panic on CPU 0 at kern/pmap.c:855: assertion failed: check_va2pa(pgdir, base + KSTKGAP + i) == PADDR(percpu_kstacks[n]) + i
-qemu: terminating on signal 15 from pid 11125
+Welcome to the JOS kernel monitor!
+Type 'help' for a list of commands.
+qemu: terminating on signal 15 from pid 10234
